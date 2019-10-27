@@ -1,6 +1,7 @@
 const http = require('http');
 const backend = require('./backend');
 const proxy = require('./proxy');
+const test = require('./test');
 
 const agent = new http.Agent({
   keepAlive: true,
@@ -17,9 +18,12 @@ const backendPort = 48384;
 backend.listen(backendPort);
 
 proxy.configure({ backendPort, agent });
-proxy.listen(proxyPort);
+proxy.listen(proxyPort, async () => {
+  console.log('Getting ready to send test requests...');
+  await new Promise(resolve => setTimeout(resolve, 3000));
 
-console.log(`Listening on http://localhost:${proxyPort}. Try opening it in your browser and holding on the 'reload' button...`);
+  test();
+});
 
 setInterval(() => {
   const sockets = Object.values(agent.sockets)[0] || [];

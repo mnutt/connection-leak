@@ -5,7 +5,7 @@ const http = require('http');
 let agent, backendPort;
 
 module.exports = http.createServer(async (req, res) => {
-  const client = new HttpPromise({
+  const backendRequest = new HttpPromise({
     agent,
     method: 'GET',
     timeout: 5000,
@@ -18,18 +18,21 @@ module.exports = http.createServer(async (req, res) => {
   });
 
   try {
-    const backendResponse = await client.fetch();
+    const backendResponse = await backendRequest.fetch();
+
+    backendResponse.headers.Connection = 'close';
 
     res.writeHead(backendResponse.statusCode, backendResponse.headers);
 
     pipeline(backendResponse, res, err => {
       if (err) {
         console.log('Pipeline Error', err);
+        backendResponse.destroy();
       }
     });
   } catch (e) {
     console.log('Handler Error', e);
-    res.writeHead(500, {});
+    res.writeHead(500, { Connection: 'close' });
     res.end(e.toString());
   }
 });
