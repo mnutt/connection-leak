@@ -4,6 +4,8 @@ This repo demonstrates an issue with leaking connection pool connections when pr
 
 test -> (port 48383) proxy -> (port 48384) backend
 
+**EDIT: this issue appears to be fixed by https://github.com/mnutt/connection-leak/commit/4f0884ec8b970ffe98d16fd2c3aaaf641b3bf04b**
+
 ## Usage
 
 `node index.js`
