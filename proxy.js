@@ -27,7 +27,6 @@ module.exports = http.createServer(async (req, res) => {
     pipeline(backendResponse, res, err => {
       if (err) {
         console.log('Pipeline Error', err);
-        backendResponse.destroy();
       }
     });
   } catch (e) {

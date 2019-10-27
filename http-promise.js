@@ -23,13 +23,16 @@ module.exports = class HttpPromise {
     return new Promise((resolve, reject) => {
       let _timeout; // reference to setTimeout timer
 
-      this.client.once('error', error => {
+      const errorFn = (err) => {
         clearTimeout(_timeout);
 
         this.abort();
+        reject(err || new Error('timeout'));
+      };
 
-        reject(error);
-      });
+      this.client.once('error', errorFn);
+      this.client.once('timeout', errorFn);
+      _timeout = setTimeout(errorFn, this.timeout);
 
       this.client.once('response', response => {
         clearTimeout(_timeout);
@@ -37,15 +40,13 @@ module.exports = class HttpPromise {
         resolve(response);
       });
 
-      _timeout = setTimeout(() => {
-        this.abort();
-
-        reject(new Error('timeout'));
-      }, this.timeout);
-
+      // POST requests
       if (this.options.body) {
         this.client.write(this.options.body);
       }
+
+      // Prevent zombie connections
+      this.client.setTimeout(this.timeout);
 
       this.client.end();
     });
